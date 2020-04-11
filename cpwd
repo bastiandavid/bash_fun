@@ -14,7 +14,7 @@ exit_abnormal() {
 
 if [ ! $# -eq 0 ] > /dev/null 2>&1
 then
-    echo "here"
+
     while getopts "rf:x:" options
     do
         
