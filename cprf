@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Bash function to copy given file from/to remote path in local clipboard.
+# Requiring xclip and rsync
+
+usage() {
+    echo "Usage: $0 [ -g PATH (grab file/directory remotely] -f PATH (forward file/directory remotely)]" 1>&2
+}
+
+exit_abnormal() {
+    usage
+    exit 1
+}
+
+if [ ! $# -eq 0 ] > /dev/null 2>&1
+then
+
+    while getopts "g:f:" options
+    do
+        REMOTE=$(xclip -selection clipboard -o)
+        
+        case "${options}" in
+        
+        g) 
+            
+            echo "Copying $REMOTE to ${OPTARG}"
+            rsync -Pare ssh $REMOTE ${OPTARG}
+            ;;
+            
+        f)
+            echo "Copying ${OPTARG} to $REMOTE"
+            rsync -Pare ssh ${OPTARG} $REMOTE
+            ;;
+        :)
+            exit_abnormal
+            ;;
+        
+        *)
+            exit_abnormal
+            ;;
+            
+        esac
+    
+    unset REMOTE
+    
+    done
+    
+else
+    exit_abnormal
+fi
+
+exit 0

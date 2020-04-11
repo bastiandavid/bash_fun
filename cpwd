@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Bash function to copy (remote) path directly to clipboard.
+# Requiring xclip and ifconfig
+
+usage() {
+    echo "Usage: $0 [ -r (copy remote path)] [ -f FILE (copy path to file) ] [ -x FILE (copy remote path to file) ]" 1>&2
+}
+
+exit_abnormal() {
+    usage
+    exit 1
+}
+
+if [ ! $# -eq 0 ] > /dev/null 2>&1
+then
+    echo "here"
+    while getopts "rf:x:" options
+    do
+        
+        case "${options}" in
+        
+        r)
+            echo -n "$(whoami)@$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'):$PWD" | xclip -selection clipboard
+            echo "Copied: $(echo "$(whoami)@$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'):$PWD")"
+            ;;
+        
+        f)
+            if [ -f "${OPTARG}" ] || [ -d "${OPTARG}" ]
+            then
+                echo -n "$PWD/${OPTARG}" | xclip -selection clipboard
+                echo "Copied: $PWD/${OPTARG}"
+            else
+                echo "File or directory ${OPTARG} does not exist."
+                exit_abnormal
+            fi
+            ;;
+            
+        x)
+            if [ -f "${OPTARG}" ] || [ -d "${OPTARG}" ]
+            then
+                echo -n "$(whoami)@$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'):$PWD/${OPTARG}" | xclip -selection clipboard
+                echo "Copied: $(echo "$(whoami)@$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'):$PWD/${OPTARG}")"
+            else
+                echo "File or directory ${OPTARG} does not exist."
+                exit_abnormal
+            fi
+            ;;
+        
+        :)
+            exit_abnormal
+            ;;
+        
+        *)
+            exit_abnormal
+            ;;
+        
+        esac
+        
+    done
+    
+else
+    
+    echo -n "$PWD" | xclip -selection clipboard
+    echo "Copied: $(echo -n "$PWD")"
+    
+fi
+
+exit 0
